@@ -29,6 +29,16 @@ func CreateUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid email address"})
 	}
 
+	existingUser, err := repository.GetUserByEmail(user.Email)
+
+	if err != nil {
+
+	}
+	if existingUser != nil {
+		// Email is already in use, return error response
+		return c.JSON(http.StatusConflict, map[string]string{"error": "Email is already in use"})
+	}
+
 	err = repository.CreateUser(user)
 	if err != nil {
 		return err
