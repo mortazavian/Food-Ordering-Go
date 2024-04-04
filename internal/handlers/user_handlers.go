@@ -4,6 +4,8 @@ import (
 	"Food-Ordering/internal/models"
 	"Food-Ordering/internal/repository"
 	"Food-Ordering/internal/utils"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -15,30 +17,34 @@ type createUserResponse struct {
 	Email     string `json:"email"`
 }
 
-func CreateUser(c echo.Context) error {
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
+// CreateUser handles the creation of a new user
+func CreateUser(c echo.Context) error {
 	user := new(models.User)
 	err := c.Bind(user)
 	if err != nil {
 		return err
 	}
 
-	// Check if the email pattern is OK
-	isValidEmail := utils.IsValidEmail(user.Email)
-	if isValidEmail == false {
+	// Check if the email pattern is valid
+	if !utils.IsValidEmail(user.Email) {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid email address"})
 	}
 
+	// Check if the email is already in use
 	existingUser, err := repository.GetUserByEmail(user.Email)
-
 	if err != nil {
-
+		return err
 	}
 	if existingUser != nil {
-		// Email is already in use, return error response
 		return c.JSON(http.StatusConflict, map[string]string{"error": "Email is already in use"})
 	}
 
+	// Create the new user
 	err = repository.CreateUser(user)
 	if err != nil {
 		return err
@@ -52,4 +58,58 @@ func CreateUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response)
+}
+
+var user1 models.User
+
+// LoginHandler handles user authentication and returns a JWT token
+func LoginHandler(c echo.Context) error {
+	var loginReq LoginRequest
+	if err := c.Bind(&loginReq); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request payload"})
+	}
+
+	user, err := repository.AuthenticateUser(loginReq.Email, loginReq.Password)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to authenticate user"})
+	}
+
+	if user == nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid email or password"})
+	}
+
+	// Store the authenticated user in the context for future use
+	c.Set("user", user)
+
+	// Generate a JWT token
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["user_id"] = user.ID
+	claims["email"] = user.Email
+
+	tokenString, err := token.SignedString([]byte("your-secret-key"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate JWT token"})
+	}
+
+	user1 = *user
+
+	return c.JSON(http.StatusOK, map[string]string{"token": tokenString})
+}
+
+// ProfileHandler retrieves the authenticated user from the context
+func ProfileHandler(c echo.Context) error {
+
+	fmt.Printf("global user: %+v", user1)
+	user, ok := c.Get("user").(*models.User)
+	if !ok || user == nil {
+		// Handle the case where the type assertion failed or the user is nil
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "User not authenticated"})
+	}
+
+	fmt.Println("USER-----------------")
+	fmt.Println(user)
+	fmt.Println("USER-----------------")
+
+	return nil
 }

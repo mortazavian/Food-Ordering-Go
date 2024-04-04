@@ -2,6 +2,7 @@ package repository
 
 import (
 	"Food-Ordering/internal/models"
+	"gorm.io/gorm"
 )
 
 func CreateUser(user *models.User) error {
@@ -17,16 +18,45 @@ func CreateUser(user *models.User) error {
 }
 
 func GetUserByEmail(email string) (*models.User, error) {
-	// Perform a database query to find a user by their email address
-	// Example using GORM:
+
 	var user models.User
 
 	if err := instance.Where("email = ?", email).First(&user).Error; err != nil {
-		// Handle the error, user not found, or other database-related issues
 
 		return nil, err
 	}
 
-	// Return the user if found
+	return &user, nil
+}
+
+func AuthenticateUser(email, password string) (*models.User, error) {
+	var user models.User
+	if err := instance.Where("email = ?", email).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	if user.Password != password {
+		return nil, nil
+	}
+
+	return &user, nil
+}
+
+func GetUserByID(userID int) (*models.User, error) {
+	var user models.User
+	err := instance.Where("id = ?", userID).First(&user).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// User not found
+			return nil, nil
+		}
+		// Other database error
+		return nil, err
+	}
 	return &user, nil
 }
