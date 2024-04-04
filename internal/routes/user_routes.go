@@ -9,7 +9,7 @@ import (
 func UserRouts(e *echo.Echo) {
 
 	userGroup := e.Group("/api/users")
-	userGroup.GET("/create", handlers.CreateUser)
+	userGroup.POST("/create", handlers.CreateUserHandler)
 	userGroup.POST("/login", handlers.LoginHandler)
 	userGroup.GET("/profile", handlers.ProfileHandler, middleware.JwtMiddleware)
 }

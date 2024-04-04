@@ -21,7 +21,7 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-func CreateUser(c echo.Context) error {
+func CreateUserHandler(c echo.Context) error {
 	user := new(models.User)
 	err := c.Bind(user)
 	if err != nil {

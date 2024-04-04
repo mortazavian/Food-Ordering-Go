@@ -25,6 +25,8 @@ func main() {
 
 	routes.UserRouts(e)
 
+	routes.RestaurantRouts(e)
+
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Start server
