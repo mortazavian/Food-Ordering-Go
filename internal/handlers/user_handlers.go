@@ -4,7 +4,6 @@ import (
 	"Food-Ordering/internal/models"
 	"Food-Ordering/internal/repository"
 	"Food-Ordering/internal/utils"
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -22,7 +21,6 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-// CreateUser handles the creation of a new user
 func CreateUser(c echo.Context) error {
 	user := new(models.User)
 	err := c.Bind(user)
@@ -60,8 +58,6 @@ func CreateUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-var user1 models.User
-
 // LoginHandler handles user authentication and returns a JWT token
 func LoginHandler(c echo.Context) error {
 	var loginReq LoginRequest
@@ -92,24 +88,22 @@ func LoginHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate JWT token"})
 	}
 
-	user1 = *user
-
 	return c.JSON(http.StatusOK, map[string]string{"token": tokenString})
 }
 
 // ProfileHandler retrieves the authenticated user from the context
 func ProfileHandler(c echo.Context) error {
 
-	fmt.Printf("global user: %+v", user1)
 	user, ok := c.Get("user").(*models.User)
 	if !ok || user == nil {
 		// Handle the case where the type assertion failed or the user is nil
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "User not authenticated"})
 	}
 
-	fmt.Println("USER-----------------")
-	fmt.Println(user)
-	fmt.Println("USER-----------------")
+	userProfile := models.UserProfile{
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email}
 
-	return nil
+	return c.JSON(http.StatusOK, userProfile)
 }
