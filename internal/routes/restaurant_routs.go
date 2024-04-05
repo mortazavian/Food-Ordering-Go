@@ -8,4 +8,5 @@ import (
 func RestaurantRouts(e *echo.Echo) {
 	restaurantGroup := e.Group("api/restaurant")
 	restaurantGroup.POST("/create", handlers.CreateRestaurantHandler)
+	restaurantGroup.POST("/login", handlers.RestaurantLoginHandler)
 }
