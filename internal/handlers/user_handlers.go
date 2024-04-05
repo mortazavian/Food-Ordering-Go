@@ -21,6 +21,15 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type CreateAddressResponse struct {
+	City        string `json:"city"`
+	AddressLine string `json:"address_line"`
+	UserId      uint   `json:"user_id"`
+	XCordinate  int    `json:"x_cordinate"`
+	YCordinate  int    `json:"y_cordinate"`
+	IsDefault   bool   `json:"is_default"`
+}
+
 func CreateUserHandler(c echo.Context) error {
 	user := new(models.User)
 	err := c.Bind(user)
@@ -106,4 +115,24 @@ func ProfileHandler(c echo.Context) error {
 		Email:     user.Email}
 
 	return c.JSON(http.StatusOK, userProfile)
+}
+
+func AddNewAddressHandler(c echo.Context) error {
+	address := new(models.UserAddress)
+
+	err := c.Bind(address)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "something wrong with data"})
+	}
+
+	user := c.Get("user").(*models.User)
+	address.UserId = user.ID
+
+	err = repository.CreateUserAddress(address)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "problem adding to database"})
+	}
+
+	return c.JSON(http.StatusOK, CreateAddressResponse{UserId: address.UserId, AddressLine: address.AddressLine,
+		City: address.City, XCordinate: address.XCordinate, YCordinate: address.YCordinate, IsDefault: address.IsDefault})
 }
