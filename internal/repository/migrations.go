@@ -17,5 +17,10 @@ func Migration(db *gorm.DB) error {
 		return err
 	}
 
+	err = db.AutoMigrate(&models.MenuItem{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
