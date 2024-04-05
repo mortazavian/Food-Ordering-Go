@@ -98,3 +98,22 @@ func RestaurantProfileHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, userProfile)
 }
+
+func AddMenuItemHandler(c echo.Context) error {
+	menuItem := new(models.MenuItem)
+	err := c.Bind(menuItem)
+	if err != nil {
+		return err
+	}
+
+	loggedRestaurant := c.Get("restaurant").(*models.Restaurant)
+
+	menuItem.RestaurantId = loggedRestaurant.ID
+
+	err = repository.CreateMenuItem(menuItem)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "food added to the database successfully"})
+}
