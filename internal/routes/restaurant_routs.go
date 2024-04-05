@@ -11,4 +11,5 @@ func RestaurantRouts(e *echo.Echo) {
 	restaurantGroup.POST("/create", handlers.CreateRestaurantHandler)
 	restaurantGroup.POST("/login", handlers.RestaurantLoginHandler)
 	restaurantGroup.GET("/profile", handlers.RestaurantProfileHandler, middleware.RestaurantJwtMiddleware)
+	restaurantGroup.POST("/add-menu-item", handlers.AddMenuItemHandler, middleware.RestaurantJwtMiddleware)
 }
