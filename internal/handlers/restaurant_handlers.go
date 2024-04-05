@@ -117,3 +117,16 @@ func AddMenuItemHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "food added to the database successfully"})
 }
+
+func GetAllMenuItemHandler(c echo.Context) error {
+	// The restaurant can see its menu item only
+	restaurant := c.Get("restaurant").(*models.Restaurant)
+
+	menuItems, err := repository.RestaurantAllMenuItems(*restaurant)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, menuItems)
+
+}
