@@ -12,4 +12,5 @@ func UserRouts(e *echo.Echo) {
 	userGroup.POST("/create", handlers.CreateUserHandler)
 	userGroup.POST("/login", handlers.LoginHandler)
 	userGroup.GET("/profile", handlers.ProfileHandler, middleware.JwtMiddleware)
+	userGroup.POST("/add-new-address", handlers.AddNewAddressHandler, middleware.JwtMiddleware)
 }
