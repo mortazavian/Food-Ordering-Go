@@ -82,3 +82,19 @@ func RestaurantLoginHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]string{"token": tokenString})
 }
+
+func RestaurantProfileHandler(c echo.Context) error {
+
+	restaurant, ok := c.Get("restaurant").(*models.Restaurant)
+	if !ok || restaurant == nil {
+		// Handle the case where the type assertion failed or the user is nil
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Restaurant not authenticated"})
+	}
+
+	userProfile := models.RestaurantProfile{
+		Name:  restaurant.Name,
+		Email: restaurant.Email,
+	}
+
+	return c.JSON(http.StatusOK, userProfile)
+}

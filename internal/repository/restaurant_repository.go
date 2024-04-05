@@ -43,3 +43,17 @@ func AuthenticateRestaurant(email, password string) (*models.Restaurant, error) 
 
 	return &restaurant, nil
 }
+
+func GetRestaurantByID(userID int) (*models.Restaurant, error) {
+	var restaurant models.Restaurant
+	err := instance.Where("id = ?", userID).First(&restaurant).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// User not found
+			return nil, nil
+		}
+		// Other database error
+		return nil, err
+	}
+	return &restaurant, nil
+}
