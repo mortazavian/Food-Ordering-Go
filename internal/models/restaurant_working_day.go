@@ -7,7 +7,7 @@ import (
 
 type RestaurantWorkingDay struct {
 	gorm.Model
-	RestaurantId uint
-	Restaurant   Restaurant `gorm:"foreignKey:RestaurantId;references:ID"`
-	WeekDay      time.Weekday
+	RestaurantId uint         `json:"restaurant_id"`
+	Restaurant   Restaurant   `gorm:"foreignKey:RestaurantId;references:ID"`
+	WeekDay      time.Weekday `json:"week_day"`
 }

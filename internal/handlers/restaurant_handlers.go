@@ -130,3 +130,21 @@ func GetAllMenuItemHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, menuItems)
 
 }
+
+func CreateRestaurantWorkingDayHandler(c echo.Context) error {
+	restaurantWorkingDay := new(models.RestaurantWorkingDay)
+	err := c.Bind(restaurantWorkingDay)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid JSON format"})
+	}
+
+	restaurantWorkingDay.RestaurantId = c.Get("restaurant").(*models.Restaurant).ID
+
+	err = repository.CreateRestaurantWorkingDay(restaurantWorkingDay)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "problem with database"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "restaurant weekday added successfully"})
+
+}
