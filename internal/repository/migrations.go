@@ -27,5 +27,10 @@ func Migration(db *gorm.DB) error {
 		return err
 	}
 
+	err = db.AutoMigrate(&models.RestaurantWorkingDay{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
