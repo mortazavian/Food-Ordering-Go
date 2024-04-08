@@ -4,9 +4,11 @@ import (
 	"Food-Ordering/internal/models"
 	"Food-Ordering/internal/repository"
 	"Food-Ordering/internal/utils"
+	"net/http"
+	"strconv"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type createRestaurantResponse struct {
@@ -146,5 +148,39 @@ func CreateRestaurantWorkingDayHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "restaurant weekday added successfully"})
+}
 
+func CreateRestaurantWorkingTimeHandler(c echo.Context) error {
+	workingDayId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "the request does not have id as path parameter "})
+	}
+
+	workingTime := new(models.RestaurantWorkingTime)
+	err = c.Bind(&workingTime)
+	if err != nil {
+		return err
+	}
+
+	//fmt.Println("------------")
+	//fmt.Println(workingTime.OpensAt)
+	//fmt.Println("------------")
+
+	workingDay, err := repository.GetRestaurantWorkingDayByID(workingDayId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"message": "there is no working day which has the provided id"})
+	}
+
+	if workingDay.RestaurantId != c.Get("restaurant").(*models.Restaurant).ID {
+		c.JSON(http.StatusBadRequest, map[string]string{"message": "you are not the owner of this working day"})
+	}
+
+	workingTime.RestaurantWorkingDayId = uint(workingDayId)
+
+	err = repository.CreateRestaurantWorkingTime(workingTime)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "problem storing working time in database"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "working time added successfully"})
 }
